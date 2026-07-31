@@ -41,6 +41,26 @@ header h1{
     margin-bottom:20px;
 }
 
+
+/* Converter Button */
+
+.converter{
+    display:inline-block;
+    margin:12px 0 20px;
+    padding:10px 16px;
+    border-radius:10px;
+    background:#1db954;
+    color:white;
+    text-decoration:none;
+    font-weight:bold;
+    transition:.2s;
+}
+
+.converter:hover{
+    background:#18a347;
+}
+
+
 #search{
     width:100%;
     padding:14px 18px;
@@ -56,16 +76,19 @@ header h1{
     box-shadow:0 0 0 2px #3b82f6;
 }
 
+
 main{
     max-width:900px;
     margin:auto;
     padding:30px;
 }
 
+
 .song{
     border-bottom:1px solid #2a2f3a;
     padding:18px 0;
 }
+
 
 .row{
     display:flex;
@@ -73,6 +96,7 @@ main{
     align-items:center;
     gap:20px;
 }
+
 
 .left{
     display:flex;
@@ -82,11 +106,13 @@ main{
     overflow:hidden;
 }
 
+
 .note{
     color:#3b82f6;
     font-size:22px;
     flex-shrink:0;
 }
+
 
 .title{
     overflow:hidden;
@@ -95,11 +121,13 @@ main{
     font-size:18px;
 }
 
+
 .right{
     display:flex;
     align-items:center;
     gap:10px;
 }
+
 
 button{
     border:none;
@@ -111,14 +139,28 @@ button{
     transition:.2s;
 }
 
+
 button:hover{
     background:#2563eb;
 }
+
+
+/* Report button */
+
+.report{
+    background:#ef4444;
+}
+
+.report:hover{
+    background:#dc2626;
+}
+
 
 .expand{
     width:42px;
     padding:8px 0;
 }
+
 
 .player{
     max-height:0;
@@ -127,20 +169,24 @@ button:hover{
     margin-left:36px;
 }
 
+
 .player.open{
     max-height:100px;
     margin-top:14px;
 }
 
+
 audio{
     width:100%;
 }
+
 
 .status{
     color:#6ee7b7;
     font-size:14px;
     min-width:60px;
 }
+
 
 #empty{
     display:none;
@@ -150,7 +196,8 @@ audio{
     font-size:18px;
 }
 
-@media (max-width:650px){
+
+@media(max-width:650px){
 
 .row{
     flex-direction:column;
@@ -171,6 +218,7 @@ audio{
 
 }
 
+
 </style>
 </head>
 
@@ -180,7 +228,15 @@ audio{
 
 <h1>🎵 Minecraft Music Library</h1>
 
-<div id="count">Loading...</div>
+<a class="converter"
+href="https://spotsaver.net"
+target="_blank">
+🎵 Spotify Converter
+</a>
+
+<div id="count">
+Loading...
+</div>
 
 <input
 id="search"
@@ -188,6 +244,7 @@ type="text"
 placeholder="Search songs...">
 
 </header>
+
 
 <main>
 
@@ -197,9 +254,7 @@ placeholder="Search songs...">
 No songs found.
 </div>
 
-</main>
-
-<script>
+</main><script>
 
 const owner="shawnobro217-art";
 const repo="music-for-minecraft";
@@ -214,21 +269,30 @@ const music=files
 .filter(f=>/\.(mp3|ogg|wav)$/i.test(f.name))
 .sort((a,b)=>a.name.localeCompare(b.name));
 
+
 document.getElementById("count").textContent=
 `${music.length} Song${music.length!==1?"s":""}`;
 
+
 music.forEach(file=>{
+
 
 const encoded=file.name
 .split("/")
 .map(encodeURIComponent)
 .join("/");
 
-const url=`https://${owner}.github.io/${repo}/${encoded}`;
+
+const url=
+`https://${owner}.github.io/${repo}/${encoded}`;
+
 
 const song=document.createElement("div");
+
 song.className="song";
+
 song.dataset.name=file.name.toLowerCase();
+
 
 song.innerHTML=`
 
@@ -236,7 +300,9 @@ song.innerHTML=`
 
 <div class="left">
 
-<div class="note">♪</div>
+<div class="note">
+♪
+</div>
 
 <div class="title">
 ${file.name.replace(/\.[^.]+$/,"")}
@@ -244,36 +310,60 @@ ${file.name.replace(/\.[^.]+$/,"")}
 
 </div>
 
+
 <div class="right">
+
 
 <button class="copy">
 Copy Link
 </button>
 
+
+<button class="report">
+⚠ Report
+</button>
+
+
 <span class="status"></span>
+
 
 <button class="expand">
 ▼
 </button>
 
+
 </div>
 
 </div>
+
 
 <div class="player">
 
 <audio controls preload="none">
+
 <source src="${url}">
+
 </audio>
 
 </div>
 
 `;
 
+
+
 const copyBtn=song.querySelector(".copy");
+
+const reportBtn=song.querySelector(".report");
+
 const expandBtn=song.querySelector(".expand");
+
 const player=song.querySelector(".player");
+
 const status=song.querySelector(".status");
+
+
+
+/* Copy link */
 
 copyBtn.onclick=()=>{
 
@@ -282,56 +372,139 @@ navigator.clipboard.writeText(url);
 status.textContent="Copied!";
 
 setTimeout(()=>{
+
 status.textContent="";
+
 },1500);
 
 };
 
-expandBtn.onclick=()=>{
 
-const open=player.classList.toggle("open");
 
-expandBtn.textContent=open?"▲":"▼";
+/* Report song through GitHub Issues */
+
+reportBtn.onclick=()=>{
+
+
+const issueTitle=
+"Problem with "+file.name;
+
+
+const issueBody=
+`Song file:
+${file.name}
+
+
+Please describe the issue:
+`;
+
+
+
+const issueURL=
+`https://github.com/${owner}/${repo}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}`;
+
+
+window.open(issueURL,"_blank");
+
 
 };
 
+
+
+
+/* Expand player */
+
+expandBtn.onclick=()=>{
+
+
+const open=
+player.classList.toggle("open");
+
+
+expandBtn.textContent=
+open ? "▲" : "▼";
+
+
+};
+
+
+
 container.appendChild(song);
 
+
 });
+
 
 filterSongs();
 
+
+})
+.catch(error=>{
+
+console.error("Error loading songs:",error);
+
+document.getElementById("count").textContent=
+"Failed to load songs";
+
 });
+
+
+
+
+/* Search */
 
 document
 .getElementById("search")
 .addEventListener("input",filterSongs);
 
+
+
 function filterSongs(){
 
-const text=document
+
+const text=
+document
 .getElementById("search")
 .value
 .toLowerCase();
 
+
+
 let visible=0;
 
-document.querySelectorAll(".song").forEach(song=>{
 
-const show=song.dataset.name.includes(text);
 
-song.style.display=show?"block":"none";
+document.querySelectorAll(".song")
+.forEach(song=>{
 
-if(show) visible++;
 
-});
+const show=
+song.dataset.name.includes(text);
 
-document.getElementById("empty").style.display=
-visible?"none":"block";
+
+
+song.style.display=
+show ? "block" : "none";
+
+
+
+if(show){
+
+visible++;
 
 }
 
-</script>
 
-</body>
-</html>
+});
+
+
+
+document.getElementById("empty").style.display=
+visible ? "none" : "block";
+
+
+}
+
+
+
+</script>
