@@ -3,85 +3,322 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Minecraft Music</title>
 
 <style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter,Arial,sans-serif;
+}
+
 body{
-    background:#111;
+    background:#0f1115;
     color:white;
-    font-family:Arial,sans-serif;
+    min-height:100vh;
+}
+
+header{
+    position:sticky;
+    top:0;
+    background:#161a22ee;
+    backdrop-filter:blur(12px);
+    padding:25px;
+    border-bottom:1px solid #2b2f38;
+    z-index:100;
+}
+
+h1{
+    font-size:32px;
+    margin-bottom:5px;
+}
+
+#count{
+    color:#9ca3af;
+    margin-bottom:20px;
+}
+
+#search{
+    width:100%;
+    padding:14px 18px;
+    border:none;
+    outline:none;
+    border-radius:14px;
+    background:#252933;
+    color:white;
+    font-size:16px;
+}
+
+main{
     max-width:900px;
     margin:auto;
     padding:30px;
 }
 
 .song{
-    background:#222;
-    padding:15px;
-    margin:15px 0;
-    border-radius:10px;
+
+    display:flex;
+    gap:20px;
+    align-items:center;
+
+    background:#181c24;
+
+    border:1px solid #2b2f38;
+
+    border-radius:18px;
+
+    padding:18px;
+
+    margin-bottom:18px;
+
+    transition:.2s;
 }
 
-button{
-    padding:8px 14px;
-    cursor:pointer;
+.song:hover{
+
+transform:translateY(-2px);
+
+border-color:#3b82f6;
+
+box-shadow:0 15px 35px rgba(0,0,0,.35);
+
+}
+
+.icon{
+
+width:70px;
+height:70px;
+
+border-radius:14px;
+
+background:linear-gradient(135deg,#3b82f6,#60a5fa);
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+font-size:34px;
+
+flex-shrink:0;
+
+}
+
+.info{
+
+flex:1;
+
+}
+
+.title{
+
+font-size:20px;
+
+font-weight:600;
+
+margin-bottom:12px;
+
+word-break:break-word;
+
 }
 
 audio{
-    width:100%;
-    margin:10px 0;
+
+width:100%;
+
+margin-bottom:12px;
+
 }
+
+button{
+
+background:#3b82f6;
+
+color:white;
+
+border:none;
+
+padding:10px 18px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+font-size:15px;
+
+transition:.2s;
+
+}
+
+button:hover{
+
+background:#2563eb;
+
+}
+
+.status{
+
+margin-left:12px;
+
+color:#6ee7b7;
+
+font-size:14px;
+
+}
+
+#empty{
+
+display:none;
+
+text-align:center;
+
+padding:60px;
+
+color:#777;
+
+font-size:18px;
+
+}
+
 </style>
+
 </head>
 
 <body>
 
-<h1>Music Library</h1>
+<header>
+
+<h1>🎵 Minecraft Music</h1>
+
+<div id="count">Loading...</div>
+
+<input
+id="search"
+placeholder="Search songs...">
+
+</header>
+
+<main>
 
 <div id="songs"></div>
 
+<div id="empty">
+No songs found.
+</div>
+
+</main>
+
 <script>
 
-const owner = "shawnobro217-art";
-const repo = "music-for-minecraft";
+const owner="shawnobro217-art";
+const repo="music-for-minecraft";
+
+const songs=document.getElementById("songs");
 
 fetch(`https://api.github.com/repos/${owner}/${repo}/contents`)
 .then(r=>r.json())
 .then(files=>{
 
-const container=document.getElementById("songs");
-
-files
+const music=files
 .filter(f=>/\.(mp3|ogg|wav)$/i.test(f.name))
-.forEach(file=>{
+.sort((a,b)=>a.name.localeCompare(b.name));
+
+document.getElementById("count").textContent=
+`${music.length} song${music.length!=1?"s":""}`;
+
+music.forEach(file=>{
+
+const url=
+`https://${owner}.github.io/${repo}/`+
+file.name.split("/").map(encodeURIComponent).join("/");
 
 const div=document.createElement("div");
+
 div.className="song";
 
-const encoded=file.name
-.split("/")
-.map(encodeURIComponent)
-.join("/");
-
-const pagesURL=`https://${owner}.github.io/${repo}/${encoded}`;
+div.dataset.name=file.name.toLowerCase();
 
 div.innerHTML=`
-<h2>${file.name}</h2>
 
-<audio controls>
-<source src="${pagesURL}">
+<div class="icon">
+🎵
+</div>
+
+<div class="info">
+
+<div class="title">
+${file.name.replace(/\.[^.]+$/,"")}
+</div>
+
+<audio controls preload="none">
+<source src="${url}">
 </audio>
 
-<button onclick="navigator.clipboard.writeText('${pagesURL}')">
+<button onclick="copy('${url}',this)">
 Copy Link
 </button>
+
+<span class="status"></span>
+
+</div>
+
 `;
 
-container.appendChild(div);
+songs.appendChild(div);
 
 });
 
+filter();
+
 });
+
+function copy(url,button){
+
+navigator.clipboard.writeText(url);
+
+const status=button.nextElementSibling;
+
+status.textContent="Copied!";
+
+setTimeout(()=>{
+status.textContent="";
+},1500);
+
+}
+
+document
+.getElementById("search")
+.addEventListener("input",filter);
+
+function filter(){
+
+const text=document
+.getElementById("search")
+.value
+.toLowerCase();
+
+let visible=0;
+
+document
+.querySelectorAll(".song")
+.forEach(song=>{
+
+const show=song.dataset.name.includes(text);
+
+song.style.display=show?"flex":"none";
+
+if(show) visible++;
+
+});
+
+document.getElementById("empty").style.display=
+visible?"none":"block";
+
+}
 
 </script>
 
