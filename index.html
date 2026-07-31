@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Minecraft Music</title>
+<title>Minecraft Music Library</title>
 
 <style>
 
@@ -12,28 +12,28 @@
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:Inter,Arial,sans-serif;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
 }
 
 body{
     background:#0f1115;
-    color:white;
+    color:#fff;
     min-height:100vh;
 }
 
 header{
     position:sticky;
     top:0;
-    background:#161a22ee;
+    background:#151922ee;
     backdrop-filter:blur(12px);
+    border-bottom:1px solid #2a2f3a;
     padding:25px;
-    border-bottom:1px solid #2b2f38;
     z-index:100;
 }
 
-h1{
-    font-size:32px;
-    margin-bottom:5px;
+header h1{
+    font-size:34px;
+    margin-bottom:6px;
 }
 
 #count{
@@ -45,11 +45,15 @@ h1{
     width:100%;
     padding:14px 18px;
     border:none;
-    outline:none;
-    border-radius:14px;
-    background:#252933;
+    border-radius:12px;
+    background:#252b36;
     color:white;
     font-size:16px;
+    outline:none;
+}
+
+#search:focus{
+    box-shadow:0 0 0 2px #3b82f6;
 }
 
 main{
@@ -59,145 +63,128 @@ main{
 }
 
 .song{
+    border-bottom:1px solid #2a2f3a;
+    padding:18px 0;
+}
 
+.row{
     display:flex;
-    gap:20px;
+    justify-content:space-between;
     align-items:center;
-
-    background:#181c24;
-
-    border:1px solid #2b2f38;
-
-    border-radius:18px;
-
-    padding:18px;
-
-    margin-bottom:18px;
-
-    transition:.2s;
+    gap:20px;
 }
 
-.song:hover{
-
-transform:translateY(-2px);
-
-border-color:#3b82f6;
-
-box-shadow:0 15px 35px rgba(0,0,0,.35);
-
+.left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    flex:1;
+    overflow:hidden;
 }
 
-.icon{
-
-width:70px;
-height:70px;
-
-border-radius:14px;
-
-background:linear-gradient(135deg,#3b82f6,#60a5fa);
-
-display:flex;
-
-align-items:center;
-
-justify-content:center;
-
-font-size:34px;
-
-flex-shrink:0;
-
-}
-
-.info{
-
-flex:1;
-
+.note{
+    color:#3b82f6;
+    font-size:22px;
+    flex-shrink:0;
 }
 
 .title{
-
-font-size:20px;
-
-font-weight:600;
-
-margin-bottom:12px;
-
-word-break:break-word;
-
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+    font-size:18px;
 }
 
-audio{
-
-width:100%;
-
-margin-bottom:12px;
-
+.right{
+    display:flex;
+    align-items:center;
+    gap:10px;
 }
 
 button{
-
-background:#3b82f6;
-
-color:white;
-
-border:none;
-
-padding:10px 18px;
-
-border-radius:10px;
-
-cursor:pointer;
-
-font-size:15px;
-
-transition:.2s;
-
+    border:none;
+    cursor:pointer;
+    border-radius:8px;
+    padding:8px 14px;
+    background:#3b82f6;
+    color:white;
+    transition:.2s;
 }
 
 button:hover{
+    background:#2563eb;
+}
 
-background:#2563eb;
+.expand{
+    width:42px;
+    padding:8px 0;
+}
 
+.player{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .25s ease;
+    margin-left:36px;
+}
+
+.player.open{
+    max-height:100px;
+    margin-top:14px;
+}
+
+audio{
+    width:100%;
 }
 
 .status{
-
-margin-left:12px;
-
-color:#6ee7b7;
-
-font-size:14px;
-
+    color:#6ee7b7;
+    font-size:14px;
+    min-width:60px;
 }
 
 #empty{
+    display:none;
+    text-align:center;
+    color:#777;
+    margin-top:50px;
+    font-size:18px;
+}
 
-display:none;
+@media (max-width:650px){
 
-text-align:center;
+.row{
+    flex-direction:column;
+    align-items:flex-start;
+}
 
-padding:60px;
+.right{
+    width:100%;
+}
 
-color:#777;
+.right button{
+    flex:1;
+}
 
-font-size:18px;
+.player{
+    margin-left:0;
+}
 
 }
 
 </style>
-
 </head>
 
 <body>
 
 <header>
 
-<h1>🎵 Minecraft Music</h1>
+<h1>🎵 Minecraft Music Library</h1>
 
 <div id="count">Loading...</div>
 
 <input
 id="search"
+type="text"
 placeholder="Search songs...">
 
 </header>
@@ -217,7 +204,7 @@ No songs found.
 const owner="shawnobro217-art";
 const repo="music-for-minecraft";
 
-const songs=document.getElementById("songs");
+const container=document.getElementById("songs");
 
 fetch(`https://api.github.com/repos/${owner}/${repo}/contents`)
 .then(r=>r.json())
@@ -228,59 +215,69 @@ const music=files
 .sort((a,b)=>a.name.localeCompare(b.name));
 
 document.getElementById("count").textContent=
-`${music.length} song${music.length!=1?"s":""}`;
+`${music.length} Song${music.length!==1?"s":""}`;
 
 music.forEach(file=>{
 
-const url=
-`https://${owner}.github.io/${repo}/`+
-file.name.split("/").map(encodeURIComponent).join("/");
+const encoded=file.name
+.split("/")
+.map(encodeURIComponent)
+.join("/");
 
-const div=document.createElement("div");
+const url=`https://${owner}.github.io/${repo}/${encoded}`;
 
-div.className="song";
+const song=document.createElement("div");
+song.className="song";
+song.dataset.name=file.name.toLowerCase();
 
-div.dataset.name=file.name.toLowerCase();
+song.innerHTML=`
 
-div.innerHTML=`
+<div class="row">
 
-<div class="icon">
-🎵
-</div>
+<div class="left">
 
-<div class="info">
+<div class="note">♪</div>
 
 <div class="title">
 ${file.name.replace(/\.[^.]+$/,"")}
 </div>
 
-<audio controls preload="none">
-<source src="${url}">
-</audio>
+</div>
 
-<button onclick="copy('${url}',this)">
+<div class="right">
+
+<button class="copy">
 Copy Link
 </button>
 
 <span class="status"></span>
 
+<button class="expand">
+▼
+</button>
+
+</div>
+
+</div>
+
+<div class="player">
+
+<audio controls preload="none">
+<source src="${url}">
+</audio>
+
 </div>
 
 `;
 
-songs.appendChild(div);
+const copyBtn=song.querySelector(".copy");
+const expandBtn=song.querySelector(".expand");
+const player=song.querySelector(".player");
+const status=song.querySelector(".status");
 
-});
-
-filter();
-
-});
-
-function copy(url,button){
+copyBtn.onclick=()=>{
 
 navigator.clipboard.writeText(url);
-
-const status=button.nextElementSibling;
 
 status.textContent="Copied!";
 
@@ -288,13 +285,29 @@ setTimeout(()=>{
 status.textContent="";
 },1500);
 
-}
+};
+
+expandBtn.onclick=()=>{
+
+const open=player.classList.toggle("open");
+
+expandBtn.textContent=open?"▲":"▼";
+
+};
+
+container.appendChild(song);
+
+});
+
+filterSongs();
+
+});
 
 document
 .getElementById("search")
-.addEventListener("input",filter);
+.addEventListener("input",filterSongs);
 
-function filter(){
+function filterSongs(){
 
 const text=document
 .getElementById("search")
@@ -303,13 +316,11 @@ const text=document
 
 let visible=0;
 
-document
-.querySelectorAll(".song")
-.forEach(song=>{
+document.querySelectorAll(".song").forEach(song=>{
 
 const show=song.dataset.name.includes(text);
 
-song.style.display=show?"flex":"none";
+song.style.display=show?"block":"none";
 
 if(show) visible++;
 
